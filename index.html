@@ -76,6 +76,35 @@
         activateNavItem(form);
         removeAllChildNodes(bodyContainer);
         bodyContainer.appendChild(form);
+
+        //Retrieve the community area names from the API and append them to the select input
+        fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
+        .then(response => response.json())
+        .then( data => {
+          //Sort the objects by the community area name
+          data.sort((a,b) => {
+            if (a == b) { return 0; }
+            return a["community_area_name"] < b["community_area_name"] ? -1 : 1;
+          });
+
+          //Only keep the unique area names.
+          //Credit: https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
+          const seen = new Set();
+          const filteredArr = data.filter(el => {
+            const duplicate = seen.has(el["community_area_name"]);
+            seen.add(el["community_area_name"]);
+            return !duplicate;
+          });
+          
+          //Create an option for each area
+          for(let area of filteredArr) {
+            let opt = document.createElement("option");
+            let areaSelect = document.querySelector("#area-select")
+            opt.innerText = area["community_area_name"];
+            console.log(opt);
+            areaSelect.appendChild(opt);
+          }
+        });
       }
       
       //Make current nav item active and the others inactive
@@ -96,6 +125,8 @@
       var homeNavItem = document.querySelector("#home-nav-item");
 
       var formNavItem = document.querySelector("#form-nav-item");
+
+      var areaSelect = document.querySelector("#area-select");
       
       //Things to include in form: sq_ft, community_area_name
       var form = document.createElement("form");
@@ -118,13 +149,7 @@
       
       
 
-      fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
-        .then(response => response.json())
-        .then( data => {
-          data.forEach(element => {
-            //console.log(element);
-          });
-        });
+      
 
     </script>
 
