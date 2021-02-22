@@ -47,10 +47,9 @@
 
 
     <script>
-      // main body container that encapsulates the content for each screen
-      var bodyContainer = document.querySelector("#body-container");
-
+      //------------------------FUNCTIONS------------------------
       var loadHomeScreen = function() {
+        removeAllChildNodes(bodyContainer);
         //description that will be displayed on the Home screen
         var description = document.createElement("p");
         description.innerText = "insert description here";
@@ -77,6 +76,14 @@
         bodyContainer.appendChild(form);
       } 
 
+      //------------------------OBJECTS------------------------
+      // main body container that encapsulates the content for each screen
+      var bodyContainer = document.querySelector("#body-container");
+
+      var homeNavItem = document.querySelector("#home-nav-item");
+
+      var formNavItem = document.querySelector("#form-nav-item");
+      
       //Things to include in form: sq_ft, community_area_name
       var form = document.createElement("form");
       form.innerHTML = `
@@ -90,11 +97,12 @@
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>`;
       
-      var formNavItem = document.querySelector("#form-nav-item");
+        
+      //------------------------EVENT HANDLERS------------------------
+      homeNavItem.addEventListener("click", loadHomeScreen);
+
       formNavItem.addEventListener("click", addForm);
       
-        //bodyContainer.appendChild(form);
-
 
 
       fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
