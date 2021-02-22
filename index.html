@@ -64,8 +64,49 @@
         loadHomeScreen();
       }
 
+      //Credit: https://www.javascripttutorial.net/dom/manipulating/remove-all-child-nodes/
+      var removeAllChildNodes = function (parent) {
+        while (parent.firstChild) {
+          parent.removeChild(parent.firstChild);
+        }
+      }
+      
+      //Clear the container and add the form to it
+      var addForm = function() {
+        removeAllChildNodes(bodyContainer);
+        bodyContainer.appendChild(form);
+      } 
+
+      //Things to include in form: sq_ft, community_area_name
+      var form = document.createElement("form");
+      form.innerHTML = `
+        <div class="mb-3">
+          <label for="exampleInputEmail1" class="form-label">Email address</label>
+          <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+        </div>
+        <div class="mb-3">
+          <label for="exampleInputPassword1" class="form-label">Password</label>
+          <input type="password" class="form-control" id="exampleInputPassword1">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>`;
+      
+      var formNavItem = document.querySelector("#form-nav-item");
+      formNavItem.addEventListener("click", addForm);
+      
+        //bodyContainer.appendChild(form);
+
+
+
+      fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
+        .then(response => response.json())
+        .then( data => {
+          data.forEach(element => {
+            console.log(element);
+          });
+        });
 
     </script>
+
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
