@@ -81,12 +81,6 @@
         fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
         .then(response => response.json())
         .then( data => {
-          //Sort the objects by the community area name
-          data.sort((a,b) => {
-            if (a == b) { return 0; }
-            return a["community_area_name"] < b["community_area_name"] ? -1 : 1;
-          });
-
           //Only keep the unique area names.
           //Credit: https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
           const seen = new Set();
@@ -94,6 +88,12 @@
             const duplicate = seen.has(el["community_area_name"]);
             seen.add(el["community_area_name"]);
             return !duplicate;
+          });
+
+          //Sort the objects by the community area name
+          filteredArr.sort((a,b) => {
+            if (a == b) { return 0; }
+            return a["community_area_name"] < b["community_area_name"] ? -1 : 1;
           });
 
           //Create an option for each area
