@@ -27,13 +27,13 @@
                 <a id="form-nav-item" class="nav-link" href="#">Form</a>
               </li>
               <li class="nav-item">
-                <a id="form-data-item" class="nav-link" href="#">Data</a>
+                <a id="data-nav-item" class="nav-link" href="#">Data</a>
               </li>
               <li class="nav-item">
-                <a id="form-map-item" class="nav-link" href="#">Map</a>
+                <a id="map-nav-item" class="nav-link" href="#">Map</a>
               </li>
               <li class="nav-item">
-                <a id="form-about-item" class="nav-link" href="#">About</a>
+                <a id="about-nav-item" class="nav-link" href="#">About</a>
               </li>
             </ul>
           </div>
@@ -71,36 +71,57 @@
         }
       }
       
+      //Event handler function triggered when the form is submitted
+      var handleForm = function() {
+        //Get the URL and the sq-ft value introduced in the form
+        var [url, maxSQFT] = returnURL();
+        //Remove the form from the screen
+        removeAllChildNodes(bodyContainer);
+        //Make the data nav item active
+        activateNavItem(dataNavItem);
+        
+        //Fetch the land data
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            //Keep only the land with a maximum sq_ft input by the user
+            let filteredData = data.filter( function(land) {
+              return parseInt(land["sq_ft"]) <= maxSQFT;
+            });
+            //Iterate through the data and crate a crad for each land
+            for(let land of filteredData) {
+              let clone = card.cloneNode(true);
+              clone.querySelector(".card-title").innerText = land["community_area_name"];
+              clone.querySelector(".card-text").innerText = land["address"] + " - " + land["sq_ft"];
+              clone.querySelector(".card-subtitle").innerText = land["pin"];
+
+              bodyContainer.appendChild(clone);
+            }
+
+          });
+      }
+
+
       //Clear the container and add the form to it
       var addForm = function() {
         activateNavItem(form);
         removeAllChildNodes(bodyContainer);
         bodyContainer.appendChild(form);
         formButton = document.querySelector("#form-button");
-        formButton.addEventListener("click", returnURL);
+        formButton.addEventListener("click", handleForm);
 
         //Retrieve the community area names from the API and append them to the select input
-        fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
+        fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json?$select=distinct%20community_area_name")
         .then(response => response.json())
         .then( data => {
-          console.log(data);
-          //Only keep the unique area names.
-          //Credit: https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
-          const seen = new Set();
-          const filteredArr = data.filter(el => {
-            const duplicate = seen.has(el["community_area_name"]);
-            seen.add(el["community_area_name"]);
-            return !duplicate;
-          });
-
           //Sort the objects by the community area name
-          filteredArr.sort((a,b) => {
+          data.sort((a,b) => {
             if (a == b) { return 0; }
             return a["community_area_name"] < b["community_area_name"] ? -1 : 1;
           });
 
-          //Create an option for each area
-          for(let area of filteredArr) {
+          //Create a select option for each area
+          for(let area of data) {
             let opt = document.createElement("option");
             let areaSelect = document.querySelector("#area-select")
             opt.innerText = area["community_area_name"];
@@ -122,17 +143,20 @@
 
       //When the form button is clicked extract the input and fetch the data
       var returnURL = function() {
-        console.log("https://data.cityofchicago.org/resource/aksk-kvfp.json" + "?" + "community_area_name=" + document.querySelector("select").value + "%" + "sq_ft=" + document.querySelector("#sq_ft").value);
+        return ["https://data.cityofchicago.org/resource/aksk-kvfp.json" + "?" + "community_area_name=" + document.querySelector("select").value, document.querySelector("#sq_ft").value]
       } 
 
       //------------------------OBJECTS------------------------
       // main body container that encapsulates the content for each screen
       var bodyContainer = document.querySelector("#body-container");
 
+      //Nav items
       var homeNavItem = document.querySelector("#home-nav-item");
-
       var formNavItem = document.querySelector("#form-nav-item");
-
+      var dataNavItem = document.querySelector("#data-nav-item");
+      var mapaNavItem = document.querySelector("#map-nav-item");
+      var aboutNavItem = document.querySelector("#about-nav-item");
+      
       var areaSelect = document.querySelector("#area-select");
 
       var formButton;
@@ -150,6 +174,16 @@
         </select>
         <button id="form-button" type="submit" class="mt-3 btn btn-primary">Submit</button>`;
       
+      var card = document.createElement("div");
+      card.classList.add("row");
+      card.innerHTML = `
+      <div class="card" >
+        <div class="card-body">
+          <h5 class="card-title"></h5>
+          <h6 class="card-subtitle mb-2 text-muted"></h6>
+          <p class="card-text"></p>
+        </div>
+      </div>`
 
       //------------------------EVENT HANDLERS------------------------
       homeNavItem.addEventListener("click", loadHomeScreen);
