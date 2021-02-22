@@ -50,6 +50,7 @@
       //------------------------FUNCTIONS------------------------
       var loadHomeScreen = function() {
         removeAllChildNodes(bodyContainer);
+        activateNavItem(homeNavItem);
         //description that will be displayed on the Home screen
         var description = document.createElement("p");
         description.innerText = "insert description here";
@@ -59,7 +60,7 @@
       //When the page loads mark the home nav item as active.
       //Dinamically display a description of what the app does.
       window.onload = function() {
-        document.querySelector("#home-nav-item").classList.add("active");
+        activateNavItem(homeNavItem);
         loadHomeScreen();
       }
 
@@ -72,9 +73,21 @@
       
       //Clear the container and add the form to it
       var addForm = function() {
+        activateNavItem(form);
         removeAllChildNodes(bodyContainer);
         bodyContainer.appendChild(form);
-      } 
+      }
+      
+      //Make current nav item active and the others inactive
+      var activateNavItem = function(item) {
+        var navItems = document.querySelectorAll(".nav-link");
+        item.classList.add("active");
+        navItems.forEach(i => {
+          if(i != item) {
+            i.classList.remove("active");
+          }
+        });
+      }
 
       //------------------------OBJECTS------------------------
       // main body container that encapsulates the content for each screen
@@ -86,30 +99,30 @@
       
       //Things to include in form: sq_ft, community_area_name
       var form = document.createElement("form");
+      form.classList.add("mt-5")
       form.innerHTML = `
         <div class="mb-3">
-          <label for="exampleInputEmail1" class="form-label">Email address</label>
-          <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+          <label for="sq_ft" class="form-label">Maximum square feet</label>
+          <input type="text" class="form-control" id="sq_ft">
         </div>
-        <div class="mb-3">
-          <label for="exampleInputPassword1" class="form-label">Password</label>
-          <input type="password" class="form-control" id="exampleInputPassword1">
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>`;
+        <label for="area-select" class="form-label">Select a community area name</label>
+        <select id="area-select" class="form-select" aria-label="Default select example">
+        </select>
+        <button type="submit" class="mt-3 btn btn-primary">Submit</button>`;
       
-        
+
       //------------------------EVENT HANDLERS------------------------
       homeNavItem.addEventListener("click", loadHomeScreen);
 
       formNavItem.addEventListener("click", addForm);
       
-
+      
 
       fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
         .then(response => response.json())
         .then( data => {
           data.forEach(element => {
-            console.log(element);
+            //console.log(element);
           });
         });
 
