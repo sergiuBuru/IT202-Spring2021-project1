@@ -76,11 +76,14 @@
         activateNavItem(form);
         removeAllChildNodes(bodyContainer);
         bodyContainer.appendChild(form);
+        formButton = document.querySelector("#form-button");
+        formButton.addEventListener("click", returnURL);
 
         //Retrieve the community area names from the API and append them to the select input
         fetch("https://data.cityofchicago.org/resource/aksk-kvfp.json")
         .then(response => response.json())
         .then( data => {
+          console.log(data);
           //Only keep the unique area names.
           //Credit: https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
           const seen = new Set();
@@ -101,7 +104,6 @@
             let opt = document.createElement("option");
             let areaSelect = document.querySelector("#area-select")
             opt.innerText = area["community_area_name"];
-            console.log(opt);
             areaSelect.appendChild(opt);
           }
         });
@@ -118,6 +120,11 @@
         });
       }
 
+      //When the form button is clicked extract the input and fetch the data
+      var returnURL = function() {
+        console.log("https://data.cityofchicago.org/resource/aksk-kvfp.json" + "?" + "community_area_name=" + document.querySelector("select").value + "%" + "sq_ft=" + document.querySelector("#sq_ft").value);
+      } 
+
       //------------------------OBJECTS------------------------
       // main body container that encapsulates the content for each screen
       var bodyContainer = document.querySelector("#body-container");
@@ -127,6 +134,8 @@
       var formNavItem = document.querySelector("#form-nav-item");
 
       var areaSelect = document.querySelector("#area-select");
+
+      var formButton;
       
       //Things to include in form: sq_ft, community_area_name
       var form = document.createElement("form");
@@ -134,21 +143,18 @@
       form.innerHTML = `
         <div class="mb-3">
           <label for="sq_ft" class="form-label">Maximum square feet</label>
-          <input type="text" class="form-control" id="sq_ft">
+          <input id="sq_ft" type="text" class="form-control">
         </div>
         <label for="area-select" class="form-label">Select a community area name</label>
         <select id="area-select" class="form-select" aria-label="Default select example">
         </select>
-        <button type="submit" class="mt-3 btn btn-primary">Submit</button>`;
+        <button id="form-button" type="submit" class="mt-3 btn btn-primary">Submit</button>`;
       
 
       //------------------------EVENT HANDLERS------------------------
       homeNavItem.addEventListener("click", loadHomeScreen);
 
       formNavItem.addEventListener("click", addForm);
-      
-      
-
       
 
     </script>
