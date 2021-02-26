@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -9,6 +9,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
 
     <title>Hello, world!</title>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0cy9QJ-JUEyB5lERlfQpEcpbJmbByoJM&v=weekly"></script>
+    <style>
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
   </head>
   <body>
     
@@ -40,16 +57,151 @@
         </div>
       </nav>
 
-      <!-- Main container -->
-      <div id="body-container" class="container">
+      <div>
+        <p class="fs-1 text-center">Chicago Land Finder</h1>
+        <p class="fs-6">This web app allows the user to search through the Chicago</p>
 
       </div>
 
 
+      <!-- Main container -->
+      <div id="body-container" class="m-5 container">
+
+      </div>
+
+
+      <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0cy9QJ-JUEyB5lERlfQpEcpbJmbByoJM&v=weekly"></script> -->
+
     <script>
+      
+      //------------------------OBJECTS------------------------
+      // main body container that encapsulates the content for each screen
+      var bodyContainer = document.querySelector("#body-container");
+
+      var body = document.querySelector("body");
+
+      //Nav items
+      var homeNavItem = document.querySelector("#home-nav-item");
+      var formNavItem = document.querySelector("#form-nav-item");
+      var dataNavItem = document.querySelector("#data-nav-item");
+      var mapNavItem = document.querySelector("#map-nav-item");
+      var aboutNavItem = document.querySelector("#about-nav-item");
+      
+      var areaSelect = document.querySelector("#area-select");
+      var mapDiv = document.createElement("div");
+      mapDiv.id = "map";
+      var requestedData;
+      var formButton;
+      var markers = [];
+      
+      //Things to include in form: sq_ft, community_area_name
+      var form = document.createElement("form");
+      form.classList.add("mt-5")
+      form.innerHTML = `
+        <div class="mb-3">
+          <label for="sq_ft" class="form-label">Maximum square feet</label>
+          <input id="sq_ft" type="text" class="form-control">
+        </div>
+        <label for="area-select" class="form-label">Select a community area name</label>
+        <select id="area-select" class="form-select" aria-label="Default select example">
+        </select>
+        <button id="form-button" type="submit" class="mt-3 btn btn-primary">Submit</button>`;
+      
+      var card = document.createElement("div");
+      card.classList.add("row");
+      card.innerHTML = `
+      <div class="mb-3 card" >
+        <div class="card-body">
+          <h5 class="card-title"></h5>
+          <h6 class="card-subtitle mb-2 text-muted"></h6>
+          <p class="card-text"></p>
+        </div>
+      </div>`
+
+
       //------------------------FUNCTIONS------------------------
+      var displayAbout = function() {
+        removeAllChildNodes(bodyContainer);
+        if(body.contains(mapDiv)) {
+          body.removeChild(mapDiv);
+        }
+        activateNavItem(aboutNavItem);
+
+      }
+      
+      
+      var displayCards = function() {
+        removeAllChildNodes(bodyContainer);
+        
+        if(body.contains(mapDiv)) {
+          body.removeChild(mapDiv);
+        }
+
+        if(requestedData) {
+          requestedData.then( filteredData => {
+            for(let land of filteredData) {
+              let clone = card.cloneNode(true);
+              clone.querySelector(".card-subtitle").innerText = land["community_area_name"];
+              clone.querySelector(".card-title").innerText = land["address"] + " - " + land["sq_ft"] + " Sq ft";
+              clone.querySelector(".card-text").innerText = land["pin"];
+              bodyContainer.appendChild(clone);
+            }
+          })
+        }
+      }
+      
+      var setMarkers = function() {
+        for(let marker of markers) {
+          marker.setMap(map);
+        }
+      }
+      
+      var initMap = function() {
+        removeAllChildNodes(bodyContainer);
+        activateNavItem(mapNavItem);
+        document.querySelector("body").appendChild(mapDiv);
+        let map = new google.maps.Map(mapDiv, {
+          center: { lat: 41.8781, lng: -87.6298 },
+          zoom: 12,
+        });
+
+        //Iterate through the api data.
+        //Create a marker for each location and an info window
+        if(requestedData) {
+          requestedData
+          .then(filteredData => {
+            for(let land of filteredData) {
+              let clone = card.cloneNode(true);
+              clone.querySelector(".card-subtitle").innerText = land["community_area_name"];
+              clone.querySelector(".card-title").innerText = land["address"] + " - " + land["sq_ft"] + " Sq ft";
+              clone.querySelector(".card-text").innerText = land["pin"];
+              
+              const infowindow = new google.maps.InfoWindow({
+                content: clone,
+              });
+
+              var marker = new google.maps.Marker({
+                position: {lat: parseFloat(land["latitude"]), lng: parseFloat(land["longitude"])},
+                map,
+                title: land["address"],
+              });
+              markers.push(marker);
+              marker.addListener("click", () => {
+                infowindow.open(map,marker);
+              })
+
+            }
+            setMarkers();
+          })
+        }
+      }
+      
+      
       var loadHomeScreen = function() {
         removeAllChildNodes(bodyContainer);
+        if(body.contains(mapDiv)) {
+          body.removeChild(mapDiv);
+        }
         activateNavItem(homeNavItem);
         //description that will be displayed on the Home screen
         var description = document.createElement("p");
@@ -60,7 +212,6 @@
       //When the page loads mark the home nav item as active.
       //Dinamically display a description of what the app does.
       window.onload = function() {
-        activateNavItem(homeNavItem);
         loadHomeScreen();
       }
 
@@ -70,7 +221,7 @@
           parent.removeChild(parent.firstChild);
         }
       }
-      
+
       //Event handler function triggered when the form is submitted
       var handleForm = function() {
         //Get the URL and the sq-ft value introduced in the form
@@ -81,7 +232,7 @@
         activateNavItem(dataNavItem);
         
         //Fetch the land data
-        fetch(url)
+        requestedData = fetch(url)
           .then(response => response.json())
           .then(data => {
             //Keep only the land with a maximum sq_ft input by the user
@@ -91,13 +242,13 @@
             //Iterate through the data and crate a crad for each land
             for(let land of filteredData) {
               let clone = card.cloneNode(true);
-              clone.querySelector(".card-title").innerText = land["community_area_name"];
-              clone.querySelector(".card-text").innerText = land["address"] + " - " + land["sq_ft"];
-              clone.querySelector(".card-subtitle").innerText = land["pin"];
-
+              clone.querySelector(".card-subtitle").innerText = land["community_area_name"];
+              clone.querySelector(".card-title").innerText = land["address"] + " - " + land["sq_ft"] + " Sq ft";
+              clone.querySelector(".card-text").innerText = land["pin"];
               bodyContainer.appendChild(clone);
             }
 
+            return filteredData;
           });
       }
 
@@ -146,50 +297,17 @@
         return ["https://data.cityofchicago.org/resource/aksk-kvfp.json" + "?" + "community_area_name=" + document.querySelector("select").value, document.querySelector("#sq_ft").value]
       } 
 
-      //------------------------OBJECTS------------------------
-      // main body container that encapsulates the content for each screen
-      var bodyContainer = document.querySelector("#body-container");
-
-      //Nav items
-      var homeNavItem = document.querySelector("#home-nav-item");
-      var formNavItem = document.querySelector("#form-nav-item");
-      var dataNavItem = document.querySelector("#data-nav-item");
-      var mapaNavItem = document.querySelector("#map-nav-item");
-      var aboutNavItem = document.querySelector("#about-nav-item");
-      
-      var areaSelect = document.querySelector("#area-select");
-
-      var formButton;
-      
-      //Things to include in form: sq_ft, community_area_name
-      var form = document.createElement("form");
-      form.classList.add("mt-5")
-      form.innerHTML = `
-        <div class="mb-3">
-          <label for="sq_ft" class="form-label">Maximum square feet</label>
-          <input id="sq_ft" type="text" class="form-control">
-        </div>
-        <label for="area-select" class="form-label">Select a community area name</label>
-        <select id="area-select" class="form-select" aria-label="Default select example">
-        </select>
-        <button id="form-button" type="submit" class="mt-3 btn btn-primary">Submit</button>`;
-      
-      var card = document.createElement("div");
-      card.classList.add("row");
-      card.innerHTML = `
-      <div class="card" >
-        <div class="card-body">
-          <h5 class="card-title"></h5>
-          <h6 class="card-subtitle mb-2 text-muted"></h6>
-          <p class="card-text"></p>
-        </div>
-      </div>`
-
       //------------------------EVENT HANDLERS------------------------
       homeNavItem.addEventListener("click", loadHomeScreen);
 
       formNavItem.addEventListener("click", addForm);
       
+      mapNavItem.addEventListener("click", initMap);
+
+      dataNavItem.addEventListener("click", displayCards);
+
+      aboutNavItem.addEventListener("click", displayAbout);
+
 
     </script>
 
@@ -197,6 +315,13 @@
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0cy9QJ-JUEyB5lERlfQpEcpbJmbByoJM&v=weekly"></script> -->
+    <!-- <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0cy9QJ-JUEyB5lERlfQpEcpbJmbByoJM&callback=initMap&libraries=&v=weekly"
+    ></script> -->
+
+
 
   </body>
 </html>
