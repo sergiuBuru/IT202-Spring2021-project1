@@ -57,17 +57,9 @@
         </div>
       </nav>
 
-      <div>
-        <p class="fs-1 text-center">Chicago Land Finder</h1>
-        <p class="fs-6">This web app allows the user to search through the Chicago</p>
-
-      </div>
-
 
       <!-- Main container -->
-      <div id="body-container" class="m-5 container">
-
-      </div>
+      <div id="body-container" class="m-5 container"></div>
 
 
       <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0cy9QJ-JUEyB5lERlfQpEcpbJmbByoJM&v=weekly"></script> -->
@@ -118,6 +110,7 @@
         </div>
       </div>`
 
+      
 
       //------------------------FUNCTIONS------------------------
       var displayAbout = function() {
@@ -126,6 +119,13 @@
           body.removeChild(mapDiv);
         }
         activateNavItem(aboutNavItem);
+        var aboutInfo = document.createElement("div");
+        aboutInfo.innerHTML = `<div>
+        <p class="fs-1 text-center">Information about the App</p>
+        <p class="fs-5">The app was built by Sergiu Buruiana. The technologies used are HTML5, CSS3, Javascript, Bootstrap, Goodle Maps API</p>
+        </div>`;
+        bodyContainer.appendChild(aboutInfo);
+
 
       }
       
@@ -162,7 +162,7 @@
         document.querySelector("body").appendChild(mapDiv);
         let map = new google.maps.Map(mapDiv, {
           center: { lat: 41.8781, lng: -87.6298 },
-          zoom: 12,
+          zoom: 11,
         });
 
         //Iterate through the api data.
@@ -205,7 +205,18 @@
         activateNavItem(homeNavItem);
         //description that will be displayed on the Home screen
         var description = document.createElement("p");
-        description.innerText = "insert description here";
+        description.innerHTML = `<div>
+        <p class="mt-5 fs-1 text-center">Chicago Land Finder</h1>
+        <p class="fs-5">This web app allows the user to search through the Chicago City-Owned Land Inventory data. 
+          The user can travel to the form page by clicking the form nav item.
+          On the form page the user can introduce a maximum amount of square feet in order to filter the data, 
+          and specfy one of the community names where they want the land to be located.
+          Once the user has submitted the form, they will be redirected to the Data page where each land lot will be displayed along with some basic information about it.        
+          The user can also travel to the Map page where each land lot is displayed as a marker on the map. By clicking the marker, the 
+          same infromation as in the data page will be displayed. The user can toggle back and forth to the Data and Map pages, or repeat the search for a different location.
+        </p>
+
+      </div>`
         bodyContainer.appendChild(description);
       }
       
